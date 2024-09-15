@@ -59,6 +59,22 @@ So, either we write an ELF loader too :D, or the best we can do is to actually l
 objects into a firmware (that loads to a known address, and has no relocations, but has
 debug symbols), and load that `.elf`.
 
+Actually, when you build a project (eg. with the NonOS SDK), such an .elf binary is already linked by
+the SDK:
+```
+...
+xtensa-lx106-elf-gcc  -L../lib -nostdlib -T../ld/eagle.app.v6.ld -Wl,--no-check-sections -Wl,--gc-sections -u call_user_start1 -Wl,-static -Wl,--start-group -lc -lgcc -lhal -lphy -lpp -lnet80211 -llwip -lwpa -lcrypto -lmain -ldriver user/.output/eagle/debug/lib/libuser.a -Wl,--end-group -o .output/eagle/debug/image/eagle.app.v6.out
+```
+
+And this `.output/eagle/debug/image/eagle.app.v6.out` is an .elf binary, statically linked (i.e. relocations are
+resolved) and still contains debug info:
+```
+$ file .output/eagle/debug/image/eagle.app.v6.out
+.output/eagle/debug/image/eagle.app.v6.out: ELF 32-bit LSB executable, Tensilica Xtensa, version 1 (SYSV), statically linked, with debug_info, not stripped
+```
+
+So, disassembling that gives us just what we wanted :). (Remember, the entry point is called `call_user_start1`.)
+
 
 ## Usage
 Copy the file to the `procs/` directory in your IDA install. Ta-daa!
